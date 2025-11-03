@@ -1,0 +1,19 @@
+# Lixo do Node
+node_modules
+
+# Pasta de build local (o Docker gera a sua)
+dist
+
+# Logs
+npm-debug.log
+yarn-debug.log
+
+# Arquivos de Sistema
+.git
+.gitignore
+.vscode
+.dockerignore
+README.md
+
+# Variáveis de ambiente
+.env*
