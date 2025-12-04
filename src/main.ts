@@ -11,14 +11,17 @@ import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 
 import '@/assets/main.scss'
+import VueApexCharts from 'vue3-apexcharts'
 
 const app = createApp(App)
 
 const pinia = createPinia()
 
 const kairosDarkGrey = '#1C1C1E' // 80/20: Superfícies (Dark) / Ação (Ambos)
-const kairosMidGrey = '#757575' // 80/20: Texto secundário
-const kairosBg = '#F5F5F5' // 80/20: Fundo (Light)
+// const kairosMidGrey = '#757575' // 80/20: Texto secundário
+const kairosMidGrey = '#BDBDBD' // 80/20: Texto secundário
+// const kairosBg = '#F5F5F5' // 80/20: Fundo (Light)
+const kairosBg = '#FFF' // 80/20: Fundo (Light)
 const kairosBorder = '#E0E0E0' // 80/20: Fundo VTextField (Light)
 
 const kairosSuccess = '#4CAF50'
@@ -33,6 +36,19 @@ const vuetify = createVuetify({
   theme: {
     defaultTheme: 'light',
     themes: {
+      // DEFAULT
+      light: {
+        dark: false,
+        colors: {
+          primary: kairosDarkGrey,
+          secondary: kairosMidGrey,
+          background: kairosBg,
+          surface: kairosDarkGrey,
+          success: kairosSuccess,
+          error: kairosError,
+          border: kairosBorder,
+        },
+      },
       dark: {
         dark: true,
         colors: {
@@ -45,19 +61,6 @@ const vuetify = createVuetify({
           border: kairosBorder,
         },
       },
-
-      light: {
-        dark: false,
-        colors: {
-          primary: kairosDarkGrey,
-          secondary: kairosMidGrey,
-          success: kairosSuccess,
-          error: kairosError,
-          background: kairosBg,
-          surface: kairosDarkGrey,
-          border: kairosBorder,
-        },
-      },
     },
   },
 })
@@ -65,5 +68,6 @@ const vuetify = createVuetify({
 app.use(pinia)
 app.use(router)
 app.use(vuetify)
+app.use(VueApexCharts)
 
 app.mount('#app')

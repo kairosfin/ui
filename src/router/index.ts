@@ -1,40 +1,83 @@
-import LandingPage from '@/views/LandingPageView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
-      component: LandingPage,
-    },
-    {
-      path: '/register',
-      component: () => import('@/views/account/AccountRegisterView.vue'),
-    },
-    {
-      path: '/login',
-      component: () => import('@/views/account/AccountLoginView.vue'),
-    },
-    {
-      path: '/forgot-password',
-      component: () => import('@/views/account/AccountRecoveryView.vue'),
+      component: () => import('@/layouts/AuthLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'landing',
+          component: () => import('@/views/auth/LandingPage.vue'),
+        },
+        {
+          path: 'login',
+          name: 'login',
+          component: () => import('@/views/auth/LoginView.vue'),
+        },
+        {
+          path: 'register',
+          name: 'register',
+          component: () => import('@/views/auth/RegisterView.vue'),
+        },
+        {
+          path: 'forgot-password',
+          name: 'forgot-password',
+          component: () => import('@/views/auth/RecoveryView.vue'),
+        },
+      ],
     },
     {
       path: '/app',
-      component: () => import('@/views/app/AppLayoutView.vue'),
+      component: () => import('@/layouts/AppLayout.vue'),
       children: [
         {
-          path: 'portfolio',
-          component: () => import('@/views/app/PortfolioView.vue'),
+          path: '',
+          name: 'portfolio-dashboard',
+          component: () => import('@/views/portfolio/PortfolioDashboard.vue'),
+        },
+        {
+          path: 'position/:symbol',
+          name: 'position-details',
+          component: () => import('@/views/portfolio/PositionDetailsView.vue'),
+          props: true,
         },
         {
           path: 'trade',
-          component: () => import('@/views/app/TradeView.vue'),
+          name: 'trade-search',
+          component: () => import('@/views/trade/AssetSearch.vue'),
+        },
+        {
+          path: 'trade/:ticker',
+          name: 'trade-detail',
+          component: () => import('@/views/trade/AssetDetail.vue'),
+        },
+        {
+          path: 'orders',
+          name: 'orders-list',
+          component: () => import('@/views/orders/OrderHistory.vue'),
+        },
+        {
+          path: 'orders/:id',
+          name: 'orders-detail',
+          component: () => import('@/views/orders/OrderReceipt.vue'),
+        },
+        {
+          path: 'bank',
+          name: 'bank-statement',
+          component: () => import('@/views/bank/BankStatement.vue'),
+        },
+        {
+          path: 'bank/deposit',
+          name: 'bank-deposit',
+          component: () => import('@/views/bank/BankDeposit.vue'),
         },
         {
           path: 'profile',
-          component: () => import('@/views/app/ProfileView.vue'),
+          name: 'user-profile',
+          component: () => import('@/views/account/UserProfile.vue'),
         },
       ],
     },
