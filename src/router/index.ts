@@ -1,21 +1,85 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      component: () => import('@/layouts/AuthLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'landing',
+          component: () => import('@/views/auth/LandingPage.vue'),
+        },
+        {
+          path: 'login',
+          name: 'login',
+          component: () => import('@/views/auth/LoginView.vue'),
+        },
+        {
+          path: 'register',
+          name: 'register',
+          component: () => import('@/views/auth/RegisterView.vue'),
+        },
+        {
+          path: 'forgot-password',
+          name: 'forgot-password',
+          component: () => import('@/views/auth/RecoveryView.vue'),
+        },
+      ],
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/app',
+      component: () => import('@/layouts/AppLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'portfolio-dashboard',
+          component: () => import('@/views/portfolio/PortfolioDashboard.vue'),
+        },
+        {
+          path: 'position/:symbol',
+          name: 'position-details',
+          component: () => import('@/views/portfolio/PositionDetailsView.vue'),
+          props: true,
+        },
+        {
+          path: 'trade',
+          name: 'trade-search',
+          component: () => import('@/views/trade/AssetSearch.vue'),
+        },
+        {
+          path: 'trade/:ticker',
+          name: 'trade-detail',
+          component: () => import('@/views/trade/AssetDetail.vue'),
+        },
+        {
+          path: 'orders',
+          name: 'orders-list',
+          component: () => import('@/views/orders/OrderHistory.vue'),
+        },
+        {
+          path: 'orders/:id',
+          name: 'orders-detail',
+          component: () => import('@/views/orders/OrderReceipt.vue'),
+        },
+        {
+          path: 'bank',
+          name: 'bank-statement',
+          component: () => import('@/views/bank/BankStatement.vue'),
+        },
+        {
+          path: 'bank/deposit',
+          name: 'bank-deposit',
+          component: () => import('@/views/bank/BankDeposit.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'user-profile',
+          component: () => import('@/views/account/UserProfile.vue'),
+        },
+      ],
     },
   ],
 })
