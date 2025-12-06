@@ -1,48 +1,58 @@
-# kairos-ui
+# Kairos Broker Frontend (Simulador de Corretora)
 
-This template should help get you started developing with Vue 3 in Vite.
+## Visão Geral
 
-## Recommended IDE Setup
+O Kairos Broker é uma Single Page Application (SPA) desenvolvida em Vue 3 + TypeScript, projetada para simular o painel de controle e as funcionalidades essenciais de uma corretora de valores. O projeto foca em uma arquitetura limpa e desacoplada, utilizando serviços mockados com persistência local (`localStorage`) para simular um ambiente de Back-end real.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Destaques & Funcionalidades
 
-## Recommended Browser Setup
+- **Autenticação Funcional:** Fluxo completo de Login, Registro e Redefinição de Senha (via Modais), com validação de campos dinâmicos.
+- **Simulação de Trade:** Execução de ordens de Compra e Venda que realizam:
+  - Atualização imediata do Saldo e Posições (Preço Médio, Quantidade).
+  - Registro das transações no extrato bancário e histórico de ordens.
+- **Portfólio Dinâmico:** Visualização da rentabilidade total e cards de ativos, começando com um saldo inicial fixo (R$ 10.000,00).
+- **Busca Real:** Listagem e busca de ativos com _debounce_ e otimização de API (`stockService`).
+- **Acessibilidade (ARIA):** Componentes críticos (Modais, Formulários, Navegação) configurados com atributos ARIA para melhor compatibilidade com leitores de tela.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Tecnologias Principais
 
-## Type Support for `.vue` Imports in TS
+O projeto utiliza o seguinte stack:
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+| Categoria          | Pacotes                         |
+| :----------------- | :------------------------------ |
+| **Core Framework** | `vue`, `vue-router`, `pinia`    |
+| **UI/Design**      | `vuetify`                       |
+| **Gráficos**       | `apexcharts`, `vue3-apexcharts` |
+| **Network**        | `axios`                         |
 
-## Customize configuration
+## Configuração e Instalação
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Pré-requisitos
 
-## Project Setup
+- Node.js (LTS recomendado)
+- npm ou Yarn
 
-```sh
-npm install
-```
+### Passos de Execução
 
-### Compile and Hot-Reload for Development
+1.  **Instale as dependências:**
 
-```sh
-npm run dev
-```
+    ```bash
+    npm install
+    ```
 
-### Type-Check, Compile and Minify for Production
+2.  **Configuração da API (Backend):**
 
-```sh
-npm run build
-```
+    Crie um arquivo `.env` na raiz do projeto. Para funcionar localmente e evitar o bloqueio de CORS, é **obrigatório** usar a configuração de Proxy do Vite (assumindo que você configurou `proxy: {'/api': {...}}` no `vite.config.ts`).
 
-### Lint with [ESLint](https://eslint.org/)
+    **Exemplo de `.env`:**
 
-```sh
-npm run lint
-```
+    ```properties
+    VITE_API_URL=/api
+    ```
+
+3.  **Inicie o Servidor de Desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+
+O aplicativo estará disponível em `http://localhost:5173`. Todos os dados de usuário e portfólio serão salvos automaticamente no `localStorage` do seu navegador.
