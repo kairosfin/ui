@@ -1,4 +1,5 @@
-import authService, { type User } from '@/services/auth'
+import authService from '@/services/authService'
+import type { User } from '@/types/User'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -19,15 +20,14 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const data = await authService.login(identifier, pass)
 
-      // Salva no estado e no LocalStorage (para persistir F5)
       user.value = data
       token.value = data.token
       localStorage.setItem('token', data.token)
 
-      return true // Sucesso
+      return true
     } catch {
       error.value = 'E-mail ou senha incorretos'
-      return false // Falha
+      return false
     } finally {
       isLoading.value = false
     }
@@ -58,9 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function updateProfile(updatedData: any) {
     if (user.value) {
-      // Mescla os dados atuais com os novos
       user.value = { ...user.value, ...updatedData }
-      // await api.put('/profile', updatedData)
     }
   }
 

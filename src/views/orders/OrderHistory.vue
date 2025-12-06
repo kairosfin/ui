@@ -37,7 +37,7 @@ const filteredAllOrders = computed(() => {
   if (search) {
     const term = search.toLowerCase()
     result = result.filter(
-      (o) => (o.symbol && o.symbol.toLowerCase().includes(term)) || o.id.toString().includes(term),
+      (o) => (o.ticker && o.ticker.toLowerCase().includes(term)) || o.id.toString().includes(term),
     )
   }
 
@@ -122,15 +122,12 @@ onMounted(() => {
       <BackButton title="Portfólio" to="/app" />
     </div>
 
-    <div class="d-flex align-center mb-4">
-      <h2 class="text-h6 font-weight-bold">Ordens</h2>
-    </div>
-
-    <div class="w-100 mb-4">
+    <div class="w-100 pb-5">
+      <h3 class="text-body-1 font-weight-bold mb-2">Ordens</h3>
       <AppFilterActions
         :count="activeFiltersCount"
         @click-filter="isFilterOpen = true"
-        @click-sort="isSortOpen = true"
+        :show-sort="false"
       />
     </div>
 
@@ -147,7 +144,7 @@ onMounted(() => {
         v-for="order in visibleOrders"
         :key="order.id"
         :order="order"
-        :symbol="order.symbol || ''"
+        :ticker="order.ticker || ''"
         @click="openDetails"
       />
 

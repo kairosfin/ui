@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import type { Order } from '@/types/Order'
 import { computed } from 'vue'
 
-const props = defineProps({
-  order: { type: Object, required: true },
-  symbol: { type: String, required: true },
-})
+const props = defineProps<{
+  order: Order & { logo?: string }
+  ticker: string
+}>()
 
 const emit = defineEmits(['click'])
 
@@ -13,46 +14,37 @@ function currency(val: number) {
 }
 
 const isTransaction = computed(() =>
-  ['Resgate', 'Aplicação', 'Depósito'].includes(props.order.type),
+  ['Resgate', 'Aplicação', 'Depósito', 'Saque'].includes(props.order.type || ''),
 )
 
 const iconConfig = computed(() => {
   const type = props.order.type
-  const status = props.order.status
+  const status = props.order.status || ''
 
   if (type === 'Resgate') {
     return { icon: 'mdi-arrow-bottom-right-thin', color: 'primary', bg: 'border' }
   }
-
-  if (type === 'Aplicação') {
+  if (type === 'Aplicação' || type === 'Depósito') {
     return { icon: 'mdi-arrow-top-right-thin', color: 'primary', bg: 'border' }
   }
-
-  if (type === 'Depósito') {
-    return { icon: 'mdi-currency-usd', color: 'primary', bg: 'border' }
-  }
-
   if (status === 'Registrada') {
     return { icon: 'mdi-clock-outline', color: 'primary', bg: 'border' }
   }
-
-  if (status.includes('Executada')) {
+  if (status.includes('Executada') || status === 'Concluída') {
     return { icon: 'mdi-check', color: 'primary', bg: 'border' }
   }
-
   return { icon: 'mdi-close', color: 'error', bg: 'border' }
 })
 
 const showLogo = computed(() => {
-  // Mostra logo se existir E se não for uma transação genérica (Resgate/Depósito)
   return props.order.logo && !isTransaction.value
 })
 
 const displayTitle = computed(() => {
-  if (isTransaction.value && !props.symbol.startsWith(props.order.type)) {
-    return `${props.order.type} ${props.symbol}`
+  if (isTransaction.value && props.ticker && !props.ticker.startsWith(props.order.type)) {
+    return `${props.order.type} ${props.ticker}`
   }
-  return props.symbol
+  return props.ticker
 })
 
 const displaySubtitle = computed(() => {
@@ -78,17 +70,17 @@ const displaySubtitle = computed(() => {
       </VAvatar>
 
       <div>
-        <div class="text-h6 font-weight-bold">{{ displayTitle }}</div>
-        <div class="text-body-1 font-weight-medium">{{ displaySubtitle }}</div>
+        <div class="text-body-1 font-weight-bold">{{ displayTitle }}</div>
+        <div class="text-body-2 text-md-body-1">{{ displaySubtitle }}</div>
       </div>
     </div>
 
     <div class="text-right">
-      <div class="font-weight-bold text-h6" :class="order.color">
+      <div class="font-weight-bold text-body-1" :class="order.color">
         {{ currency(order.price) }}
       </div>
 
-      <div class="text-body-1 font-weight-medium">
+      <div class="text-body-2 text-md-body-1">
         <template v-if="isTransaction">
           {{ order.date }}
         </template>

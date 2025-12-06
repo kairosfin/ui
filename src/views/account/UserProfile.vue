@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppButton from '@/components/common/AppButton.vue'
 import BackButton from '@/components/common/ArrowButton.vue'
-import { useAuthStore } from '@/stores/auth' // <--- 1. Importa a Store
+import { useAuthStore } from '@/stores/auth'
 import { masks } from '@/utils/masks'
 import { rules } from '@/utils/rules'
 import { onMounted, ref } from 'vue'
@@ -12,7 +12,6 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const formRef = ref()
 
-// Inicializa vazio, vai ser preenchido no onMounted
 const form = ref({
   name: '',
   email: '',
@@ -42,7 +41,6 @@ async function saveProfile() {
   if (valid) {
     loading.value = true
 
-    // Simula delay de API
     setTimeout(() => {
       authStore.updateProfile(form.value)
 
@@ -91,6 +89,7 @@ const onDateInput = (e: Event) => {
           bg-color="border"
           variant="filled"
           :rules="[rules.required]"
+          disabled
         />
 
         <VTextField
@@ -121,6 +120,7 @@ const onDateInput = (e: Event) => {
           maxlength="15"
           @input="onPhoneInput"
           :rules="[rules.required, rules.phone]"
+          disabled
         />
 
         <VTextField
@@ -132,6 +132,7 @@ const onDateInput = (e: Event) => {
           maxlength="10"
           @input="onDateInput"
           :rules="[rules.required, rules.date]"
+          disabled
         />
 
         <VSelect
@@ -139,7 +140,7 @@ const onDateInput = (e: Event) => {
           :items="['Masculino', 'Feminino', 'Outro', 'Prefiro não dizer']"
           bg-color="border"
           label="Gênero"
-          variant="filled"
+          variant="outlined"
           :rules="[rules.required]"
         />
 
@@ -147,7 +148,7 @@ const onDateInput = (e: Event) => {
           v-model="form.address"
           label="Endereço"
           bg-color="border"
-          variant="filled"
+          variant="outlined"
           class="mb-6"
         />
 

@@ -5,12 +5,16 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppFilterActions from '@/components/common/AppFilterActions.vue'
 import AppFilterSheet from '@/components/common/AppFilterSheet.vue'
 import AppSortSheet from '@/components/common/AppSortSheet.vue'
-import AssetHeader from '@/components/common/AssetHeader.vue'
 import BackButton from '@/components/common/ArrowButton.vue'
+import AssetHeader from '@/components/common/AssetHeader.vue'
 import OrderCard from '@/components/orders/OrderCard.vue'
 import OrderDetailSheet from '@/components/orders/OrderDetailSheet.vue'
 import PositionCard from '@/components/portfolio/PositionCard.vue'
+import stockService from '@/services/stockService'
 import { usePortfolioStore } from '@/stores/portfolio'
+import type { Order } from '@/types/Order'
+import type { Position } from '@/types/Position'
+import { QuoteRange } from '@/types/Stock'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -19,14 +23,17 @@ const router = useRouter()
 const portfolioStore = usePortfolioStore()
 
 const isLoading = ref(true)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const position = ref<any>(null)
+const position = ref<Position | null>(null)
+
+const isChartLoading = ref(false)
+const chartSeries = ref<number[]>([])
+const chartCategories = ref<string[]>([])
 
 const isFilterOpen = ref(false)
 const isSortOpen = ref(false)
 const isOrderDetailOpen = ref(false)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const selectedOrder = ref<any>({})
+
+const selectedOrder = ref<Order>({} as Order)
 
 const currentSort = ref('date_desc')
 const activeFilters = ref({
@@ -38,7 +45,7 @@ const activeFilters = ref({
 
 function goToTrade() {
   if (position.value) {
-    router.push({ name: 'trade-detail', params: { ticker: position.value.symbol } })
+    router.push({ name: 'trade-detail', params: { ticker: position.value.ticker } })
   }
 }
 
@@ -51,9 +58,9 @@ function openSort() {
   isSortOpen.value = true
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function openOrderDetails(order: any) {
-  selectedOrder.value = { ...order, symbol: position.value.symbol }
+function openOrderDetails(order: Order) {
+  if (!position.value) return
+  selectedOrder.value = { ...order, ticker: position.value.ticker }
   isOrderDetailOpen.value = true
 }
 
@@ -93,11 +100,14 @@ const filteredOrders = computed(() => {
   }
 
   result.sort((a, b) => {
+    const dateA = new Date(a.dateISO || 0).getTime()
+    const dateB = new Date(b.dateISO || 0).getTime()
+
     switch (currentSort.value) {
       case 'date_desc':
-        return new Date(b.dateISO || 0).getTime() - new Date(a.dateISO || 0).getTime()
+        return dateB - dateA
       case 'date_asc':
-        return new Date(a.dateISO || 0).getTime() - new Date(b.dateISO || 0).getTime()
+        return dateA - dateB
       case 'price_desc':
         return b.price - a.price
       case 'price_asc':
@@ -109,10 +119,48 @@ const filteredOrders = computed(() => {
   return result
 })
 
+async function fetchMarketData(ticker: string) {
+  isChartLoading.value = true
+  try {
+    const quotes = await stockService.getHistory(ticker, QuoteRange.Month)
+
+    if (quotes.length > 0) {
+      const sortedQuotes = quotes.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      )
+
+      chartSeries.value = sortedQuotes.map((q) => q.close)
+      chartCategories.value = sortedQuotes.map((q) =>
+        new Date(q.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+      )
+
+      if (position.value) {
+        const lastQuote = sortedQuotes[sortedQuotes.length - 1]
+        position.value.price = lastQuote!.close
+
+        position.value.currentTotal = position.value.quantity * lastQuote!.close
+        position.value.profit =
+          position.value.currentTotal - position.value.quantity * position.value.avgPrice
+        position.value.profitPercent =
+          (position.value.profit / (position.value.quantity * position.value.avgPrice)) * 100
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar histórico:', error)
+  } finally {
+    isChartLoading.value = false
+  }
+}
+
 onMounted(async () => {
-  const symbol = route.params.symbol as string
-  if (symbol) {
-    position.value = await portfolioStore.getPositionBySymbol(symbol)
+  const ticker = route.params.ticker as string
+  if (ticker) {
+    const result = await portfolioStore.getPositionByTicker(ticker)
+    position.value = result || null
+
+    if (position.value) {
+      await fetchMarketData(ticker)
+    }
   }
   isLoading.value = false
 })
@@ -127,7 +175,6 @@ onMounted(async () => {
     <div v-else-if="position" class="w-100 pb-16">
       <div class="px-4 pt-4">
         <BackButton title="Posição" to="/app" />
-
         <AssetHeader :position="position" />
       </div>
 
@@ -137,7 +184,7 @@ onMounted(async () => {
 
       <VRow align="start">
         <VCol cols="12" md="5">
-          <PositionCard :position="position" minimal class="bg-grey-lighten-4" />
+          <PositionCard :position="position" minimal />
         </VCol>
 
         <VCol cols="12" md="7">
@@ -161,7 +208,7 @@ onMounted(async () => {
                   v-for="order in filteredOrders"
                   :key="order.id"
                   :order="order"
-                  :symbol="position.symbol"
+                  :ticker="position.ticker"
                   @click="openOrderDetails"
                 />
               </div>

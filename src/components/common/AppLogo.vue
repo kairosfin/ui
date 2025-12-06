@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTheme } from 'vuetify'
 
-import logoForDarkTheme from '@/assets/logo-kairos-light.svg'
-import logoForLightTheme from '@/assets/logo-kairos.svg'
+import logoDark from '@/assets/logo-kairos-light.svg'
+import logoLight from '@/assets/logo-kairos.svg'
 
-defineProps({
+const props = defineProps({
   height: { type: [String, Number], default: 40 },
   width: { type: [String, Number], default: 120 },
+  isDark: { type: Boolean, default: false },
 })
 
-const theme = useTheme()
-
 const currentLogo = computed(() => {
-  return theme.global.current.value.dark ? logoForDarkTheme : logoForLightTheme
+  return props.isDark ? logoDark : logoLight
 })
 </script>
 

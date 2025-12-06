@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppButton from '@/components/common/AppButton.vue'
 import ArrowButton from '@/components/common/ArrowButton.vue'
-import { useAuthStore } from '@/stores/auth' // Import Store
+import { useAuthStore } from '@/stores/auth'
 import { masks } from '@/utils/masks'
 import { rules } from '@/utils/rules'
 import { ref } from 'vue'
@@ -100,7 +100,7 @@ const onDateInput = (e: Event) => {
 
         <VCheckbox v-model="form.terms" color="primary" :rules="[rules.terms]">
           <template v-slot:label>
-            <div class="text-body-2 text-secondary">
+            <div class="text-body-2">
               Autorizo o Kairos a tratar meus dados pessoais e concordo com a
               <a href="#" class="font-weight-bold text-primary text-decoration-none"
                 >Política de Privacidade</a

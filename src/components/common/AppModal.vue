@@ -28,14 +28,14 @@ function handleAction() {
 </script>
 
 <template>
-  <VBottomSheet v-model="isOpen" inset>
+  <VBottomSheet max-width="500" v-model="isOpen" inset>
     <VCard
       class="rounded-t-lg bg-background h-auto d-flex flex-column px-5 pt-2 pb-6"
       style="max-height: 90vh"
     >
       <ArrowButton :title="backText" direction="left" :action="close" class="mt-0" />
       <div class="d-flex align-center justify-center position-relative">
-        <span class="text-h5 font-weight-bold text-center text-truncate pb-5 pt-3">
+        <span class="text-h6 font-weight-bold text-center text-truncate pb-5 pt-3">
           {{ title }}
         </span>
       </div>

@@ -2,6 +2,7 @@
 import AppLogoIcon from '@/components/common/AppLogoIcon.vue'
 import { ref } from 'vue'
 import AppButton from '../common/AppButton.vue'
+import AppLogo from '../common/AppLogo.vue'
 
 defineProps({
   color: {
@@ -27,7 +28,7 @@ const navItems = [
 <template>
   <VNavigationDrawer v-model="isDrawerOpen" temporary>
     <div class="pa-4">
-      <span class="text-h5 font-weight-bold">Menu</span>
+      <AppLogo isDark />
     </div>
 
     <VDivider />

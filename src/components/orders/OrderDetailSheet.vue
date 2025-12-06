@@ -36,10 +36,8 @@ function currency(val: number) {
   return val?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-// Custo de aquisição = Preço * Qtd (sem taxas)
 const acquisitionCost = computed(() => (localOrder.value.price || 0) * (localOrder.value.qty || 0))
 
-// Total Final = Custo + Taxas
 const orderTotal = computed(() => acquisitionCost.value + (localOrder.value.fees || 0))
 
 const isCancellable = computed(() => localOrder.value.status === 'Registrada')
@@ -66,7 +64,7 @@ async function handleCancel() {
     <div class="d-flex flex-column ga-1 mb-6 text-body-1 font-weight-medium">
       <div class="d-flex justify-space-between">
         <span>Ativo</span>
-        <span class="text-uppercase">{{ localOrder.symbol || 'N/A' }}</span>
+        <span class="text-uppercase">{{ localOrder.ticker || 'N/A' }}</span>
       </div>
 
       <div class="d-flex justify-space-between">
@@ -110,7 +108,7 @@ async function handleCancel() {
 
       <VDivider class="my-2" />
 
-      <div class="d-flex justify-space-between text-h6">
+      <div class="d-flex justify-space-between text-body-1">
         <span class="font-weight-bold">Total</span>
         <span class="font-weight-black">{{ currency(orderTotal) }}</span>
       </div>

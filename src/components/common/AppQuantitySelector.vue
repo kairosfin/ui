@@ -14,7 +14,6 @@ const emit = defineEmits(['update:modelValue'])
 const model = computed({
   get: () => props.modelValue,
   set: (val: string | number) => {
-    // Remove caracteres não numéricos caso o usuário cole texto
     const num = Number(String(val).replace(/\D/g, ''))
     if (!isNaN(num) && num >= props.min) {
       emit('update:modelValue', num)
@@ -50,7 +49,6 @@ function decrement() {
       />
     </div>
 
-    <!-- Removido ga-1 para juntar os botões -->
     <div class="d-flex align-center">
       <VBtn
         :size="btnSize"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PortfolioChart from '@/components/charts/PortfolioChart.vue'
 import AppAccordion from '@/components/common/AppAccordion.vue'
-import BalanceCard from '@/components/portfolio/BalanceCard.vue'
+import BalanceCard from '@/components/common/BalanceCard.vue'
 import PositionCard from '@/components/portfolio/PositionCard.vue'
 import { usePortfolioStore } from '@/stores/portfolio'
 import { computed, onMounted } from 'vue'
@@ -30,7 +30,7 @@ onMounted(() => {
 
       <div class="d-flex align-end justify-space-between">
         <div>
-          <div class="text-body-1 font-weight-medium mb-1">Total Investido + Saldo</div>
+          <div class="text-body-1">Total Investido + Saldo</div>
 
           <VSkeletonLoader
             v-if="portfolioStore.isLoading"
@@ -39,13 +39,13 @@ onMounted(() => {
             color="transparent"
             class="ml-n3"
           />
-          <div v-else class="text-h5 text-sm-h4 font-weight-black line-height-1">
+          <div v-else class="text-h6 text-sm-h5 font-weight-black line-height-1">
             {{ currency(portfolioStore.totalPortfolio) }}
           </div>
         </div>
 
         <div class="text-right">
-          <div class="text-body- font-weight-medium mb-1">Atualizado hoje</div>
+          <div class="text-body-1 mb-1">Atualizado hoje</div>
 
           <VSkeletonLoader
             v-if="portfolioStore.isLoading"
@@ -53,7 +53,7 @@ onMounted(() => {
             width="100"
             class="ml-auto"
           />
-          <div v-else class="text-h6 font-weight-bold" :class="profitColor">
+          <div v-else class="text-body-1 text-sm-h6 font-weight-bold" :class="profitColor">
             {{ portfolioStore.totalProfit >= 0 ? '+' : '' }}
             {{ currency(portfolioStore.totalProfit) }}
             ({{ portfolioStore.totalProfitPercent }}%)
@@ -75,7 +75,7 @@ onMounted(() => {
         </template>
 
         <template v-else>
-          <VCol v-for="pos in portfolioStore.positions" :key="pos.symbol" cols="12" md="6" lg="4">
+          <VCol v-for="pos in portfolioStore.positions" :key="pos.ticker" cols="12" md="6" lg="4">
             <PositionCard :position="pos" />
           </VCol>
         </template>

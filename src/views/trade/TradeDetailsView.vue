@@ -2,17 +2,20 @@
 import PortfolioChart from '@/components/charts/PortfolioChart.vue'
 import AppAccordion from '@/components/common/AppAccordion.vue'
 import AppButton from '@/components/common/AppButton.vue'
-import AppModal from '@/components/common/AppModal.vue' // Importado
+import AppModal from '@/components/common/AppModal.vue'
 import AppQuantitySelector from '@/components/common/AppQuantitySelector.vue'
 import AppSelect from '@/components/common/AppSelect.vue'
 import BackButton from '@/components/common/ArrowButton.vue'
 import AssetHeader from '@/components/common/AssetHeader.vue'
-import BalanceCard from '@/components/portfolio/BalanceCard.vue'
+import BalanceCard from '@/components/common/BalanceCard.vue'
 import PositionCard from '@/components/portfolio/PositionCard.vue'
 import OrderBook from '@/components/trade/OrderBook.vue'
-import { stockService } from '@/services/stocks'
+// IMPORT DO SERVICE SINGLETON
+import stockService from '@/services/stockService'
 import { usePortfolioStore } from '@/stores/portfolio'
-import type { StockQuote } from '@/types/Stock'
+// NOVOS TIPOS
+import type { Position } from '@/types/Position'
+import type { Stock } from '@/types/Stock'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -20,18 +23,20 @@ const route = useRoute()
 const portfolioStore = usePortfolioStore()
 
 const isLoading = ref(true)
-const stock = ref<StockQuote | null | undefined>(null)
+// Tipagem correta
+const stock = ref<Stock | null>(null)
+const currentPosition = ref<Position | null>(null)
+
 const quantity = ref(1)
 const orderType = ref('A mercado')
 const tradeType = ref<'Compra' | 'Venda'>('Compra')
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const currentPosition = ref<any>(null)
 
 const showConfirmModal = ref(false)
 
 const totalEstimated = computed(() => {
   if (!stock.value) return 0
-  return stock.value.regularMarketPrice * quantity.value
+  // CORREÇÃO: regularMarketPrice -> price
+  return stock.value.price * quantity.value
 })
 
 const estimatedFee = 0.05
@@ -43,7 +48,8 @@ function currency(val: number) {
 
 const orderBookData = computed(() => {
   if (!stock.value) return []
-  const basePrice = stock.value.regularMarketPrice
+  // CORREÇÃO: regularMarketPrice -> price
+  const basePrice = stock.value.price
   return [
     { qtdBuy: 24, buy: basePrice - 0.02, sell: basePrice + 0.01, qtdSell: 24 },
     { qtdBuy: 73, buy: basePrice - 0.1, sell: basePrice + 0.05, qtdSell: 73 },
@@ -55,8 +61,17 @@ const orderBookData = computed(() => {
 onMounted(async () => {
   const ticker = route.params.ticker as string
   if (ticker) {
-    stock.value = await stockService.getBySymbol(ticker)
-    currentPosition.value = await portfolioStore.getPositionBySymbol(ticker)
+    isLoading.value = true
+
+    // 1. Busca dados do Mercado (Usando search pois não temos getByTicker)
+    const results = await stockService.search([ticker])
+    stock.value = results.find((s) => s.ticker === ticker) || null
+
+    // 2. Busca dados da Posição (Seu bolso)
+    // cast para null se undefined
+    const pos = await portfolioStore.getPositionByTicker(ticker)
+    currentPosition.value = pos || null
+
     isLoading.value = false
   }
 })
@@ -76,18 +91,10 @@ function confirmTrade() {
       </VBtn>
     </div>
 
-    <AssetHeader
-      :position="{
-        logo: stock.logoUrl,
-        symbol: stock.symbol,
-        name: stock.shortName,
-        regularMarketPrice: stock.regularMarketPrice,
-        regularMarketChangePercent: stock.regularMarketChangePercent,
-      }"
-    />
+    <AssetHeader :position="{ ...stock } as any" />
 
     <div class="mb-4">
-      <PortfolioChart />
+      <PortfolioChart :ticker="stock.ticker" />
     </div>
 
     <PositionCard v-if="currentPosition" :position="currentPosition" minimal class="mb-4" />
@@ -152,7 +159,7 @@ function confirmTrade() {
       <div class="d-flex flex-column ga-3 mt-2">
         <div class="d-flex justify-space-between">
           <span>Ativo</span>
-          <span>{{ stock.symbol }}</span>
+          <span>{{ stock.ticker }}</span>
         </div>
         <div class="d-flex justify-space-between">
           <span>Preço</span>

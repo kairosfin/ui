@@ -24,11 +24,11 @@ const hasItems = computed(() => props.timeline && props.timeline.length > 0)
         <div
           v-for="(event, index) in timeline"
           :key="index"
-          class="d-flex justify-space-between text-caption py-2 border-opacity-25"
+          class="d-flex justify-space-between text-caption font-weight-medium py-2 border-opacity-25"
           :class="{ 'border-b': index !== timeline.length - 1 }"
         >
-          <span class="font-weight-bold">{{ event.date }}</span>
-          <span class="font-weight-bold text-right">{{ event.label }}</span>
+          <span>{{ event.date }}</span>
+          <span class="text-right">{{ event.label }}</span>
         </div>
       </VSheet>
     </AppAccordion>

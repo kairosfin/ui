@@ -39,7 +39,7 @@ const router = createRouter({
           component: () => import('@/views/portfolio/PortfolioDashboard.vue'),
         },
         {
-          path: 'position/:symbol',
+          path: 'position/:ticker',
           name: 'position-details',
           component: () => import('@/views/portfolio/PositionDetailsView.vue'),
           props: true,
@@ -47,12 +47,12 @@ const router = createRouter({
         {
           path: 'trade',
           name: 'trade-search',
-          component: () => import('@/views/trade/AssetSearch.vue'),
+          component: () => import('@/views/trade/TradeView.vue'),
         },
         {
           path: 'trade/:ticker',
           name: 'trade-detail',
-          component: () => import('@/views/trade/AssetDetail.vue'),
+          component: () => import('@/views/trade/TradeDetailsView.vue'),
         },
         {
           path: 'orders',
@@ -60,19 +60,9 @@ const router = createRouter({
           component: () => import('@/views/orders/OrderHistory.vue'),
         },
         {
-          path: 'orders/:id',
-          name: 'orders-detail',
-          component: () => import('@/views/orders/OrderReceipt.vue'),
-        },
-        {
           path: 'bank',
           name: 'bank-statement',
           component: () => import('@/views/bank/BankStatement.vue'),
-        },
-        {
-          path: 'bank/deposit',
-          name: 'bank-deposit',
-          component: () => import('@/views/bank/BankDeposit.vue'),
         },
         {
           path: 'profile',

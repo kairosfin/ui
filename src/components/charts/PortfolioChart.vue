@@ -1,23 +1,65 @@
 <script setup lang="ts">
-import { stockService } from '@/services/stocks'
+import { portfolioService } from '@/services/portfolioService'
+import stockService from '@/services/stockService'
+import { QuoteRange } from '@/types/Stock'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 
+const props = defineProps<{
+  ticker?: string
+}>()
+
 const { mobile } = useDisplay()
+
+const series = computed(() => [
+  {
+    name: props.ticker ? 'Preço' : 'Patrimônio',
+    data: chartSeriesData.value,
+  },
+])
 
 const chartSeriesData = ref<number[]>([])
 const chartCategories = ref<string[]>([])
 const isLoading = ref(false)
 
 const timeFilters = ['1M', '6M', '1Y', 'YTD', 'ALL']
-const selectedFilter = ref('1Y')
+const selectedFilter = ref('1M')
 
-const fetchChartData = async () => {
+function getRangeFromFilter(filter: string): QuoteRange {
+  switch (filter) {
+    case '1M':
+      return QuoteRange.Month
+    case '6M':
+      return QuoteRange.Semester
+    case '1Y':
+      return QuoteRange.Year
+    case 'YTD':
+      return QuoteRange.YearToDate
+    case 'ALL':
+      return QuoteRange.Max
+    default:
+      return QuoteRange.Month
+  }
+}
+
+const fetchData = async () => {
+  isLoading.value = true
   try {
-    isLoading.value = true
-    const { values, dates } = await stockService.getPortfolioHistory(selectedFilter.value)
-    chartSeriesData.value = values
-    chartCategories.value = dates
+    if (props.ticker) {
+      const range = getRangeFromFilter(selectedFilter.value)
+      const quotes = await stockService.getHistory(props.ticker, range)
+
+      const sorted = quotes.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+      chartSeriesData.value = sorted.map((q) => q.close)
+      chartCategories.value = sorted.map((q) =>
+        new Date(q.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+      )
+    } else {
+      const { values, dates } = await portfolioService.getPortfolioHistory(selectedFilter.value)
+      chartSeriesData.value = values
+      chartCategories.value = dates
+    }
   } catch (error) {
     console.error('Erro ao carregar gráfico:', error)
   } finally {
@@ -25,12 +67,10 @@ const fetchChartData = async () => {
   }
 }
 
-watch(selectedFilter, () => {
-  fetchChartData()
-})
+watch([() => props.ticker, selectedFilter], fetchData)
 
 onMounted(() => {
-  fetchChartData()
+  fetchData()
 })
 
 const chartOptions = computed(() => ({
@@ -52,14 +92,12 @@ const chartOptions = computed(() => ({
   xaxis: {
     categories: chartCategories.value,
     tickAmount: 6,
-
     labels: {
-      style: { colors: '#000', fontSize: '14px', fontWeight: '600' },
+      style: { colors: '#000', fontSize: '12px', fontWeight: '600' },
       rotate: mobile.value ? -45 : 0,
       rotateAlways: mobile.value,
       hideOverlappingLabels: true,
     },
-
     axisBorder: { show: true, color: '#E0E0E0' },
     axisTicks: { show: false },
     tooltip: { enabled: false },
@@ -67,8 +105,9 @@ const chartOptions = computed(() => ({
   yaxis: {
     show: true,
     labels: {
-      style: { colors: '#000', fontSize: '14px', fontWeight: '600' },
-      formatter: (value: number) => (value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value),
+      style: { colors: '#000', fontSize: '12px', fontWeight: '600' },
+      formatter: (value: number) =>
+        value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value.toFixed(2),
     },
   },
   grid: {
@@ -84,8 +123,6 @@ const chartOptions = computed(() => ({
     y: { formatter: (val: number) => `R$ ${val.toLocaleString('pt-BR')}` },
   },
 }))
-
-const series = computed(() => [{ name: 'Patrimônio', data: chartSeriesData.value }])
 </script>
 
 <template>

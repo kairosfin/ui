@@ -2,6 +2,7 @@
 import AppLogoIcon from '@/components/common/AppLogoIcon.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import AppLogo from '../common/AppLogo.vue'
 
 defineProps({
   color: {
@@ -37,7 +38,7 @@ function goToProfile() {
 <template>
   <VNavigationDrawer v-model="isDrawerOpen" temporary>
     <div class="pa-4">
-      <span class="text-h5 font-weight-bold">Menu</span>
+      <AppLogo isDark />
     </div>
 
     <VDivider />
@@ -48,10 +49,10 @@ function goToProfile() {
         :key="item.title"
         :prepend-icon="item.icon"
         :to="item.to"
-        class="py-2 text-h6"
+        class="py-2 text-body-1"
       >
         <template v-slot:title>
-          <div class="text-h6 font-weight-regular">{{ item.title }}</div>
+          <div class="text-body-1 font-weight-regular">{{ item.title }}</div>
         </template>
       </VListItem>
     </VList>
@@ -85,19 +86,11 @@ function goToProfile() {
 
     <VSpacer />
 
-    <div>
-      <VBtn icon class="mr-2">
-        <VBadge dot color="error">
-          <VIcon icon="mdi-bell-outline" />
-        </VBadge>
-      </VBtn>
-
-      <VAvatar
-        size="40"
-        image="https://i.pravatar.cc/150?img=12"
-        class="cursor-pointer elevation-2"
-        @click="goToProfile"
-      />
-    </div>
+    <VAvatar
+      size="40"
+      image="https://i.pravatar.cc/150?img=12"
+      class="cursor-pointer elevation-2"
+      @click="goToProfile"
+    />
   </VAppBar>
 </template>

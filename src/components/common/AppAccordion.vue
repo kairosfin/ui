@@ -21,7 +21,7 @@ const isOpen = ref(props.initiallyOpen)
       class="d-flex justify-space-between align-center pa-5 mb-5 bg-border cursor-pointer rounded-lg"
       @click="isOpen = !isOpen"
     >
-      <span class="text-h6 font-weight-bold">
+      <span class="text-body-1 font-weight-bold">
         {{ title }}
       </span>
 

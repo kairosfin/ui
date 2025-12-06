@@ -1,19 +1,12 @@
-const delay = (ms = 800) => new Promise((resolve) => setTimeout(resolve, ms))
+import type { User } from '@/types/User'
 
-export interface User {
-  id: string
-  name: string
-  email: string
-  token: string
-}
+const delay = (ms = 800) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export default {
   async login(identifier: string, password: string): Promise<User> {
     await delay()
 
-    // Simulação básica
     if (password === '123456') {
-      // Mock de sucesso
       return {
         id: '1',
         name: 'Usuário Kairos',
@@ -27,7 +20,6 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async register(data: any): Promise<User> {
     await delay(1500)
-    // Retorna um usuário criado
     return {
       id: '2',
       name: data.name,

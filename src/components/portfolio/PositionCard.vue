@@ -1,17 +1,17 @@
 <script setup lang="ts">
+import type { Position } from '@/types/Position'
 import { useRouter } from 'vue-router'
 import AppButton from '../common/AppButton.vue'
 
-const props = defineProps({
-  position: {
-    type: Object,
-    required: true,
+const props = withDefaults(
+  defineProps<{
+    position: Position
+    minimal?: boolean
+  }>(),
+  {
+    minimal: false,
   },
-  minimal: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 
 const router = useRouter()
 
@@ -19,14 +19,15 @@ function currency(val: number) {
   return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-function profitColor(val: number) {
-  return val >= 0 ? 'success' : 'error'
+function formatPercent(val: number) {
+  if (!val) return '0,00'
+  return val.toFixed(2).replace('.', ',')
 }
 
 function goToTrade() {
   router.push({
     name: 'trade-detail',
-    params: { ticker: props.position.symbol },
+    params: { ticker: props.position.ticker },
   })
 }
 
@@ -35,7 +36,7 @@ function handleCardClick() {
 
   router.push({
     name: 'position-details',
-    params: { symbol: props.position.symbol },
+    params: { ticker: props.position.ticker },
   })
 }
 </script>
@@ -54,7 +55,7 @@ function handleCardClick() {
         </VAvatar>
 
         <div>
-          <div class="font-weight-bold text-h6">{{ position.symbol }}</div>
+          <div class="font-weight-bold text-h6">{{ position.ticker }}</div>
           <div class="text-body-2 font-weight-medium">{{ position.name }}</div>
         </div>
       </div>
@@ -70,7 +71,7 @@ function handleCardClick() {
       </div>
     </div>
 
-    <VRow dense class="text-body-1 font-weight-medium">
+    <VRow dense class="text-body-1">
       <VCol cols="6" class="pb-1">Quantidade</VCol>
       <VCol cols="6" class="text-right pb-1">
         {{ position.quantity }}
@@ -87,8 +88,8 @@ function handleCardClick() {
       </VCol>
 
       <VCol cols="6" class="">Rentabilidade</VCol>
-      <VCol cols="6" class="text-right" :class="profitColor(position.profit)">
-        {{ currency(position.profit) }} ({{ position.profitPercent }}%)
+      <VCol cols="6" class="text-right">
+        {{ currency(position.profit) }} ({{ formatPercent(position.profitPercent) }}%)
       </VCol>
     </VRow>
   </VCard>
