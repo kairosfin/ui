@@ -10,11 +10,9 @@ import AssetHeader from '@/components/common/AssetHeader.vue'
 import OrderCard from '@/components/orders/OrderCard.vue'
 import OrderDetailSheet from '@/components/orders/OrderDetailSheet.vue'
 import PositionCard from '@/components/portfolio/PositionCard.vue'
-import stockService from '@/services/stockService'
 import { usePortfolioStore } from '@/stores/portfolio'
 import type { Order } from '@/types/Order'
 import type { Position } from '@/types/Position'
-import { QuoteRange } from '@/types/Stock'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -24,10 +22,6 @@ const portfolioStore = usePortfolioStore()
 
 const isLoading = ref(true)
 const position = ref<Position | null>(null)
-
-const isChartLoading = ref(false)
-const chartSeries = ref<number[]>([])
-const chartCategories = ref<string[]>([])
 
 const isFilterOpen = ref(false)
 const isSortOpen = ref(false)
@@ -119,48 +113,11 @@ const filteredOrders = computed(() => {
   return result
 })
 
-async function fetchMarketData(ticker: string) {
-  isChartLoading.value = true
-  try {
-    const quotes = await stockService.getHistory(ticker, QuoteRange.Month)
-
-    if (quotes.length > 0) {
-      const sortedQuotes = quotes.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      )
-
-      chartSeries.value = sortedQuotes.map((q) => q.close)
-      chartCategories.value = sortedQuotes.map((q) =>
-        new Date(q.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
-      )
-
-      if (position.value) {
-        const lastQuote = sortedQuotes[sortedQuotes.length - 1]
-        position.value.price = lastQuote!.close
-
-        position.value.currentTotal = position.value.quantity * lastQuote!.close
-        position.value.profit =
-          position.value.currentTotal - position.value.quantity * position.value.avgPrice
-        position.value.profitPercent =
-          (position.value.profit / (position.value.quantity * position.value.avgPrice)) * 100
-      }
-    }
-  } catch (error) {
-    console.error('Erro ao buscar histórico:', error)
-  } finally {
-    isChartLoading.value = false
-  }
-}
-
 onMounted(async () => {
   const ticker = route.params.ticker as string
   if (ticker) {
     const result = await portfolioStore.getPositionByTicker(ticker)
     position.value = result || null
-
-    if (position.value) {
-      await fetchMarketData(ticker)
-    }
   }
   isLoading.value = false
 })
@@ -179,12 +136,12 @@ onMounted(async () => {
       </div>
 
       <div class="mb-4">
-        <PortfolioChart />
+        <PortfolioChart :ticker="position.ticker" />
       </div>
 
       <VRow align="start">
         <VCol cols="12" md="5">
-          <PositionCard :position="position" minimal />
+          <PositionCard :position="position" minimal class="bg-grey-lighten-4" />
         </VCol>
 
         <VCol cols="12" md="7">

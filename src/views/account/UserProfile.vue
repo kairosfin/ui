@@ -12,7 +12,19 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const formRef = ref()
 
-const form = ref({
+// 1. NOVO: Defina a interface que espelha os campos do formulário
+interface UserProfileForm {
+  name: string
+  email: string
+  document: string
+  phoneNumber: string
+  birthdate: string
+  genderType: string | null // <--- Explicitamente permitimos STRING ou NULL
+  address: string
+}
+
+// 2. Aplique a interface ao ref
+const form = ref<UserProfileForm>({
   name: '',
   email: '',
   document: '',
@@ -26,7 +38,8 @@ onMounted(() => {
   if (authStore.user) {
     form.value = {
       ...form.value,
-      ...authStore.user,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(authStore.user as any),
     }
   }
 })
@@ -41,9 +54,9 @@ async function saveProfile() {
   if (valid) {
     loading.value = true
 
-    setTimeout(() => {
-      authStore.updateProfile(form.value)
+    authStore.updateProfile(form.value)
 
+    setTimeout(() => {
       loading.value = false
       backToApp()
     }, 1500)

@@ -1,10 +1,10 @@
 import type { BankTransaction } from '@/types/Bank'
 import type { Position } from '@/types/Position'
-import type { Stock } from '@/types/Stock' // <--- Importe o tipo Stock
-import { generateMockTransactions } from './mock-bank-data'
-import { MOCK_STOCKS, generateMockOrders } from './mock-stock-data'
+import type { Stock } from '@/types/Stock'
+import { createBankTransactionFromOrder, getInitialDepositTransaction } from './mock-bank-data'
+import { MOCK_STOCKS, createOrderFromTrade, generateMockOrders } from './mock-stock-data'
 
-const DB_KEY = 'kairos_mock_db_v3'
+const DB_KEY = 'kairos_mock_db_v7'
 
 interface MockDatabase {
   balance: number
@@ -13,7 +13,6 @@ interface MockDatabase {
 }
 
 function generateInitialData(): MockDatabase {
-  // CORREÇÃO: Adicionei tipagem explicita (stock: Stock) para calar o erro TS
   const positions: Position[] = MOCK_STOCKS.map((stock: Stock) => {
     const quantity = Math.floor(Math.random() * 490) + 10
     const variationFactor = 1 + (Math.random() * 0.25 - 0.15)
@@ -22,7 +21,7 @@ function generateInitialData(): MockDatabase {
     const currentTotal = quantity * stock.price
     const investedTotal = quantity * avgPrice
     const profit = currentTotal - investedTotal
-    const profitPercent = (profit / investedTotal) * 100
+    const profitPercent = parseFloat(((profit / investedTotal) * 100).toFixed(2))
 
     return {
       ...stock,
@@ -35,14 +34,12 @@ function generateInitialData(): MockDatabase {
     }
   })
 
-  const transactions = generateMockTransactions()
-
-  const initialBalance = 1000 + transactions.reduce((acc, t) => acc + t.amount, 0)
+  const initialTx = getInitialDepositTransaction()
 
   return {
-    balance: parseFloat(initialBalance.toFixed(2)),
+    balance: 10000.0, // Saldo inicial
     positions,
-    transactions,
+    transactions: [initialTx],
   }
 }
 
@@ -83,19 +80,96 @@ class LocalDatabase {
     this.save()
   }
 
+  executeOrder(order: {
+    ticker: string
+    name?: string
+    logo?: string
+    type: 'Compra' | 'Venda'
+    qty: number
+    price: number
+    total: number
+    fees: number
+    date: string
+  }): boolean {
+    // Verifica saldo antes de comprar
+    if (order.type === 'Compra' && this.data.balance < order.total)
+      throw new Error('Saldo insuficiente')
+
+    // Atualização de Saldo
+    if (order.type === 'Compra') {
+      this.data.balance -= order.total
+    } else {
+      this.data.balance += order.total - order.fees
+    }
+
+    const transaction = createBankTransactionFromOrder(order)
+    this.data.transactions.unshift(transaction)
+
+    let position = this.data.positions.find((p) => p.ticker === order.ticker)
+
+    if (!position) {
+      if (order.type === 'Venda') throw new Error('Você não possui este ativo para vender.')
+
+      const stockInfo = MOCK_STOCKS.find((s) => s.ticker === order.ticker)
+
+      position = {
+        ticker: order.ticker,
+        name: order.name || stockInfo?.name || order.ticker,
+        logo: order.logo || stockInfo?.logo || '',
+        price: order.price,
+        dailyYield: 0,
+        quantity: 0,
+        avgPrice: 0,
+        currentTotal: 0,
+        profit: 0,
+        profitPercent: 0,
+        marketCap: 0,
+        tradeVolume: 0,
+        sector: '',
+        updatedAt: '',
+        orders: [],
+      }
+      this.data.positions.push(position)
+    }
+
+    // Cálculos de Posição
+    if (order.type === 'Compra') {
+      const currentCost = position.quantity * position.avgPrice
+      const newCost = order.qty * order.price
+      position.avgPrice = (currentCost + newCost) / (position.quantity + order.qty)
+      position.quantity += order.qty
+    } else {
+      position.quantity -= order.qty
+    }
+
+    if (position.quantity <= 0) {
+      this.data.positions = this.data.positions.filter((p) => p.ticker !== order.ticker)
+    } else {
+      position.currentTotal = position.quantity * order.price
+      const invested = position.quantity * position.avgPrice
+      position.profit = position.currentTotal - invested
+      position.profitPercent = (position.profit / invested) * 100
+
+      const newOrder = createOrderFromTrade(order)
+      if (!position.orders) position.orders = []
+      position.orders.unshift(newOrder)
+    }
+
+    this.save()
+    return true
+  }
+
   cancelOrder(orderId: number): boolean {
     for (const pos of this.data.positions) {
       const order = pos.orders.find((o) => o.id === orderId)
       if (order) {
         order.status = 'Cancelada'
         order.color = 'text-error'
-
         if (!order.timeline) order.timeline = []
         order.timeline.push({
           date: new Date().toLocaleString('pt-BR'),
           label: 'Cancelamento confirmado',
         })
-
         this.save()
         return true
       }

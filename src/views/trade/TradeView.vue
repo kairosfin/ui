@@ -15,7 +15,7 @@ const isLoading = ref(true)
 const searchQuery = ref('')
 const selectedFilter = ref('Todos')
 
-const itemsPerPage = 10 // Aumentei para ver mais itens
+const itemsPerPage = 10
 const currentPageLimit = ref(itemsPerPage)
 const filters = ['Favoritos', 'Carteira', 'Maiores altas']
 
@@ -23,23 +23,27 @@ function goToAssetDetail(ticker: string) {
   router.push({ name: 'trade-detail', params: { ticker: ticker } })
 }
 
+// CORREÇÃO: Função atualizada para manter o estado da lista até 3 caracteres
 async function fetchStocks() {
+  // CLÁUSULA DE GUARDA: Mantém os resultados atuais se houver 1 ou 2 caracteres
+  if (searchQuery.value.length > 0 && searchQuery.value.length < 3) {
+    return
+  }
+
   isLoading.value = true
   try {
-    // LÓGICA SIMPLIFICADA:
-    // Se digitou algo, busca o que digitou.
-    // Se está vazio, busca termos genéricos ("banco", "sa") para preencher a lista inicial.
-    const terms = searchQuery.value.length > 0 ? [searchQuery.value] : ['VALE']
+    // Define os termos: Se >= 3, usa a busca. Se 0, usa o padrão.
+    const terms = searchQuery.value.length >= 3 ? [searchQuery.value] : ['banco', 'sa']
 
     stocks.value = await stockService.search(terms)
   } catch (error) {
-    console.error(error)
+    console.error('Erro ao buscar ativos:', error)
   } finally {
     isLoading.value = false
   }
 }
 
-// Debounce para não travar enquanto digita
+// Watcher com Debounce
 let timeout: ReturnType<typeof setTimeout>
 watch(searchQuery, () => {
   clearTimeout(timeout)
@@ -68,7 +72,7 @@ onMounted(() => {
     </div>
 
     <div class="w-100 mb-5">
-      <AppSearchBar v-model="searchQuery" placeholder="Pesquisar (ex: itub, vale)" />
+      <AppSearchBar v-model="searchQuery" placeholder="Pesquisar (ex: itub, bradesco)" />
     </div>
 
     <div class="w-100">
@@ -87,8 +91,15 @@ onMounted(() => {
         @click="goToAssetDetail(stock.ticker)"
       />
 
-      <div v-if="stocks.length === 0" class="text-center mt-10 text-medium-emphasis">
-        Nenhum ativo encontrado. Tente buscar por outro.
+      <div
+        v-if="searchQuery.length > 0 && searchQuery.length < 3"
+        class="text-center mt-10 text-medium-emphasis"
+      >
+        Digite mais de 2 caracteres para iniciar a busca avançada.
+      </div>
+
+      <div v-else-if="stocks.length === 0" class="text-center mt-10 text-medium-emphasis">
+        Nenhum ativo encontrado para a sua busca.
       </div>
 
       <div v-if="hasMoreItems" class="text-center mt-6">

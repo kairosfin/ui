@@ -40,22 +40,33 @@ const acquisitionCost = computed(() => (localOrder.value.price || 0) * (localOrd
 
 const orderTotal = computed(() => acquisitionCost.value + (localOrder.value.fees || 0))
 
-const isCancellable = computed(() => localOrder.value.status === 'Registrada')
+const isCancellable = computed(() =>
+  ['Registrada', 'Em andamento'].includes(localOrder.value.status),
+)
 
 async function handleCancel() {
   isCancelling.value = true
-  setTimeout(() => {
-    portfolioStore.cancelOrder(localOrder.value.id)
+
+  try {
+    await portfolioStore.cancelOrder(localOrder.value.id)
+
     localOrder.value.status = 'Cancelada'
     localOrder.value.color = 'text-error'
+
     if (!localOrder.value.timeline) localOrder.value.timeline = []
+
     localOrder.value.timeline.push({
       date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR'),
-      label: 'Cancelamento solicitado pelo usuário',
+      label: 'Cancelamento solicitado e concluído',
     })
+
     emit('order-updated')
+  } catch (error) {
+    console.error('Falha ao cancelar ordem:', error)
+    alert('Não foi possível cancelar a ordem.')
+  } finally {
     isCancelling.value = false
-  }, 1000)
+  }
 }
 </script>
 

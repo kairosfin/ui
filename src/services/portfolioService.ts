@@ -1,50 +1,39 @@
-import { db } from '@/data/mock-db' // Certifique-se que seu mock-db use 'ticker' agora, não 'symbol'
+import { db } from '@/data/mock-db'
+import type { Position } from '@/types/Position'
 
-// Helper de delay para simular latência de rede
 const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export const portfolioService = {
-  // GET /api/portfolio (Mock)
-  async getPortfolio() {
-    await delay()
+  // GET /api/portfolio
+  async getPortfolio(): Promise<{ positions: Position[]; balance: number }> {
+    await delay(400)
+    // Busca sempre a versão mais recente do DB (que vem do LocalStorage)
     return {
       positions: db.positions,
-      balance: db.balance, // <-- Agora Bank e Portfolio compartilham o mesmo saldo salvo!
+      balance: db.balance,
     }
   },
 
-  // POST /api/orders/{id}/cancel (Mock)
+  // POST /api/orders
+  // AQUI ESTÁ A MÁGICA: Conecta o botão "Confirmar" do Trade com o DB
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async executeOrder(orderPayload: any): Promise<boolean> {
+    await delay(800) // Simula processamento da corretora
+    return db.executeOrder(orderPayload)
+  },
+
+  // POST /api/orders/{id}/cancel
   async cancelOrder(orderId: number): Promise<boolean> {
-    await delay(800)
-
-    // Procura a ordem dentro de todas as posições
-    for (const position of db.positions) {
-      const order = position.orders.find((o) => o.id === orderId)
-
-      if (order) {
-        order.status = 'Cancelada'
-        order.color = 'text-error'
-
-        const now = new Date()
-        order.timeline.push({
-          date: now.toLocaleString('pt-BR'),
-          label: 'Cancelamento solicitado pelo usuário',
-        })
-
-        return true
-      }
-    }
-    return false
+    await delay(600)
+    return db.cancelOrder(orderId)
   },
 
-  /**
-   * 3. MOCK: Histórico do Portfólio (Rentabilidade total)
-   * Movido de stockService para cá, onde faz mais sentido.
-   */
+  // GET /api/portfolio/history (Ainda Mock Visual)
   async getPortfolioHistory(period: string) {
     await delay(600)
 
-    // Lógica Mock de geração de gráfico
+    // Mantemos essa lógica visual gerada na hora,
+    // pois criar histórico financeiro retroativo complexo no mock-db seria exagero agora.
     const count = period === '1Y' ? 100 : 30
     const startValue = 10000
     const values: number[] = [startValue]

@@ -20,7 +20,7 @@ function generateTimeline(dateStr: string, status: string): OrderTimeline[] {
     events.push({ date: `${displayDate} 10:00:05`, label: 'Processamento concluído' })
   } else if (status.includes('Cancelada')) {
     events.push({ date: `${displayDate} 10:05:00`, label: 'Cancelada pelo Operador' })
-  } else if (status === 'Em andamento') {
+  } else if (status === 'Em andamento' || status === 'Registrada') {
     events.push({ date: `${displayDate} 10:01:00`, label: 'Aguardando liquidação' })
   }
   return events
@@ -70,64 +70,30 @@ export const generateMockOrders = (ticker: string, currentPrice: number): Order[
       ticker: ticker,
       date: 'Hoje',
       dateISO: date0,
-      price: currentPrice,
+      price: currentPrice * 0.99,
       qty: 100,
-      status: 'Cancelada',
-      color: 'text-error',
-      fees: 0,
-      timeline: generateTimeline(date0, 'Cancelada'),
-      total: currentPrice * 100,
-    })
-  }
-
-  if (ticker === 'FIQE3') {
-    orders.unshift({
-      id: 99902,
-      type: 'Resgate',
-      ticker: ticker,
-      date: 'Hoje',
-      dateISO: date0,
-      price: 1500.0,
-      qty: 0,
-      status: 'Concluída',
-      color: 'text-success',
-      fees: 0,
-      timeline: generateTimeline(date0, 'Concluída'),
-      total: 1500.0,
-    })
-  }
-
-  if (ticker === 'ITUB4') {
-    orders.push({
-      id: 99903,
-      type: 'Aplicação',
-      ticker: ticker,
-      date: formatDisplayDate(date5),
-      dateISO: date5,
-      price: 5000.0,
-      qty: 0,
-      status: 'Concluída',
+      status: 'Em andamento',
       color: 'text-primary',
       fees: 0,
-      timeline: generateTimeline(date5, 'Concluída'),
-      total: 5000.0,
+      timeline: generateTimeline(date0, 'Em andamento'),
+      total: currentPrice * 99,
     })
   }
 
   if (ticker === 'WEGE3') {
-    orders.push({
-      id: 99904,
-      type: 'Depósito',
+    orders.unshift({
+      id: 99902,
+      type: 'Venda',
       ticker: ticker,
-      date: formatDisplayDate(date0),
+      date: 'Hoje',
       dateISO: date0,
-      price: 200.0,
-      qty: 0,
-      status: 'Processando',
-      color: 'text-primary',
-      fees: 0,
-      timeline: generateTimeline(date0, 'Em andamento'),
-      total: 200.0,
+      price: currentPrice * 1.05,
+      qty: 25,
+      status: 'Registrada',
+      color: 'text-success',
+      fees: 0.15,
+      timeline: generateTimeline(date0, 'Registrada'),
+      total: currentPrice * 1.05 * 25,
     })
   }
 
@@ -191,3 +157,22 @@ export const MOCK_STOCKS: Stock[] = [
     updatedAt: new Date().toISOString(),
   },
 ]
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createOrderFromTrade(order: any): Order {
+  const now = new Date()
+  return {
+    id: Math.floor(Math.random() * 1000000),
+    type: order.type,
+    ticker: order.ticker,
+    date: formatDisplayDate(order.date),
+    dateISO: order.date,
+    price: order.price,
+    qty: order.qty,
+    total: order.total,
+    fees: order.fees,
+    status: 'Executada',
+    color: order.type === 'Compra' ? 'text-primary' : 'text-success',
+    timeline: [{ date: now.toLocaleString('pt-BR'), label: 'Executada a mercado' }],
+  }
+}

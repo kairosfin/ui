@@ -20,24 +20,21 @@ export const usePortfolioStore = defineStore('portfolio', () => {
   const totalProfitPercent = computed(() => {
     const costBasis = positions.value.reduce((acc, pos) => acc + pos.avgPrice * pos.quantity, 0)
     if (costBasis === 0) return '0.00'
+
     return ((totalProfit.value / costBasis) * 100).toFixed(2)
   })
 
-  // Transforma lista de Posições em lista plana de Ordens para o Histórico Geral
   const allOrders = computed(() => {
     const orders: Order[] = []
-
     positions.value.forEach((pos) => {
       pos.orders.forEach((order) => {
         orders.push({
           ...order,
           ticker: pos.ticker,
-          // Injeta a logo da posição na ordem para exibição na lista
           logo: pos.logo,
-        } as Order & { logo?: string }) // Type assertion para adicionar logo dinamicamente
+        } as Order & { logo?: string })
       })
     })
-
     return orders.sort((a, b) => {
       const dateA = new Date(a.dateISO || a.date).getTime()
       const dateB = new Date(b.dateISO || b.date).getTime()
@@ -58,24 +55,30 @@ export const usePortfolioStore = defineStore('portfolio', () => {
     }
   }
 
-  // CRÍTICO: Atualizado de getPositionBySymbol para getByTicker
   async function getPositionByTicker(ticker: string) {
     if (positions.value.length === 0) await fetchPortfolio()
-    // O Backend usa 'ticker' (PETR4), o front deve usar igual
     return positions.value.find((p) => p.ticker === ticker)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function executeTrade(orderPayload: any) {
+    try {
+      await portfolioService.executeOrder(orderPayload)
+      await fetchPortfolio()
+      return true
+    } catch (error) {
+      console.error('Falha ao executar trade:', error)
+      throw error
+    }
   }
 
   async function cancelOrder(orderId: number) {
     await portfolioService.cancelOrder(orderId)
-
-    // Atualização Otimista (Optimistic UI)
     for (const pos of positions.value) {
       const order = pos.orders.find((o) => o.id === orderId)
       if (order) {
         order.status = 'Cancelada'
         order.color = 'text-error'
-
-        // Adiciona timeline de cancelamento
         order.timeline.push({
           date: new Date().toLocaleDateString('pt-BR'),
           label: 'Cancelamento solicitado',
@@ -94,6 +97,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
     allOrders,
     fetchPortfolio,
     getPositionByTicker,
+    executeTrade,
     cancelOrder,
   }
 })

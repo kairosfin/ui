@@ -19,7 +19,7 @@ function goBackLogin() {
     <VCard width="400" max-width="100%" flat color="transparent">
       <ArrowButton title="Login" to="/login" />
 
-      <VCardTitle class="text-center text-h5 font-weight-bold mb-15"> Redefinir senha </VCardTitle>
+      <VCardTitle class="text-center text-h5 font-weight-bold mb-15"> Definir senha </VCardTitle>
 
       <VForm @submit.prevent="goBackLogin">
         <VTextField

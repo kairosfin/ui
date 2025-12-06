@@ -24,7 +24,7 @@ const hasItems = computed(() => props.timeline && props.timeline.length > 0)
         <div
           v-for="(event, index) in timeline"
           :key="index"
-          class="d-flex justify-space-between text-caption font-weight-medium py-2 border-opacity-25"
+          class="d-flex justify-space-between text-caption font-weight-medium py-1 border-opacity-25"
           :class="{ 'border-b': index !== timeline.length - 1 }"
         >
           <span>{{ event.date }}</span>

@@ -1,59 +1,59 @@
-import { db } from '@/data/mock-db' // Importa o DB persistente
+import { db } from '@/data/mock-db'
+import { bankService } from '@/services/bankService'
 import type { BankTransaction } from '@/types/Bank'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 export const useBankStore = defineStore('bank', () => {
-  // Inicializa com valor do DB (LocalStorage)
-  const balance = ref(db.balance)
+  const balance = ref(0)
   const transactions = ref<BankTransaction[]>([])
   const isLoading = ref(false)
 
-  function fetchTransactions() {
+  async function fetchTransactions() {
     isLoading.value = true
-    // Simula delay de rede, mas pega dados persistidos
-    setTimeout(() => {
-      transactions.value = db.transactions
-      balance.value = db.balance // Sincroniza saldo também
+    try {
+      const data = await bankService.getStatement()
+      balance.value = data.balance
+      transactions.value = data.transactions
+    } catch (error) {
+      console.error('Erro ao buscar extrato:', error)
+    } finally {
       isLoading.value = false
-    }, 600)
+    }
+  }
+
+  async function deposit(value: number) {
+    isLoading.value = true
+    try {
+      const newTransaction = await bankService.deposit(value)
+
+      db.addTransaction(newTransaction)
+
+      balance.value += value
+      transactions.value.unshift(newTransaction)
+    } catch (error) {
+      console.error('Erro no depósito:', error)
+    } finally {
+      isLoading.value = false
+    }
   }
 
   const groupedTransactions = computed(() => {
     const groups: Record<string, BankTransaction[]> = {}
     transactions.value.forEach((t) => {
-      // Garante que displayDate exista (se vier do DB cru pode precisar formatar)
       const dDate = t.displayDate || new Date(t.date).toLocaleDateString('pt-BR')
-
       if (!groups[dDate]) groups[dDate] = []
       groups[dDate]!.push(t)
     })
     return groups
   })
 
-  function deposit(value: number) {
-    const today = new Date()
-
-    const newTx: BankTransaction = {
-      id: Math.random(),
-      type: 'Depósito',
-      title: 'Depósito',
-      subtitle: 'Adição manual de saldo',
-      date: today.toISOString(),
-      displayDate: today.toLocaleDateString('pt-BR'),
-      amount: value, // Valor numérico para conta
-      time: today.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      color: 'text-success',
-    }
-
-    // 1. Atualiza no DB (Persistência)
-    db.updateBalance(value)
-    db.addTransaction(newTx)
-
-    // 2. Atualiza no Estado Local (Reatividade Imediata)
-    balance.value += value
-    transactions.value.unshift(newTx)
+  return {
+    balance,
+    transactions,
+    groupedTransactions,
+    isLoading,
+    fetchTransactions,
+    deposit,
   }
-
-  return { balance, transactions, groupedTransactions, isLoading, fetchTransactions, deposit }
 })

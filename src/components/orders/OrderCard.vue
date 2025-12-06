@@ -21,6 +21,9 @@ const iconConfig = computed(() => {
   const type = props.order.type
   const status = props.order.status || ''
 
+  if (status === 'Em andamento' || status === 'Registrada') {
+    return { icon: 'mdi-clock-outline', color: 'primary', bg: 'border' }
+  }
   if (type === 'Resgate') {
     return { icon: 'mdi-arrow-bottom-right-thin', color: 'primary', bg: 'border' }
   }
@@ -32,6 +35,9 @@ const iconConfig = computed(() => {
   }
   if (status.includes('Executada') || status === 'Concluída') {
     return { icon: 'mdi-check', color: 'primary', bg: 'border' }
+  }
+  if (status === 'Cancelada') {
+    return { icon: 'mdi-close', color: 'primary', bg: 'border' }
   }
   return { icon: 'mdi-close', color: 'error', bg: 'border' }
 })

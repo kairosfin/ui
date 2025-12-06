@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import type { Position } from '@/types/Position'
-
-defineProps<{ position: Position }>()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+defineProps<{ position: any }>()
 
 function currency(val: number) {
-  return val?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  return val?.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+function formatPercent(val: number) {
+  if (!val) return '0,00'
+  return val.toFixed(2).replace('.', ',')
 }
 </script>
 
@@ -21,12 +30,11 @@ function currency(val: number) {
     </div>
     <div class="text-right">
       <div class="text-h6 font-weight-bold">{{ currency(position.price) }}</div>
-
       <div
         class="text-body-2 font-weight-bold"
         :class="position.dailyYield >= 0 ? 'text-success' : 'text-error'"
       >
-        {{ position.dailyYield >= 0 ? '+' : '' }}{{ position.dailyYield }}%
+        {{ position.dailyYield >= 0 ? '+' : '' }}{{ formatPercent(position.dailyYield) }}%
       </div>
     </div>
   </div>

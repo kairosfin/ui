@@ -7,37 +7,22 @@ import { useRouter } from 'vue-router'
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
 
-  const user = ref<User | null>(null)
-  const token = ref<string | null>(localStorage.getItem('token'))
+  const user = ref<User | null>(authService.getMockUser())
+
+  const token = ref<string | null>(user.value?.token || null)
+
   const isLoading = ref(false)
   const error = ref('')
 
   const isAuthenticated = computed(() => !!token.value)
 
   async function login(identifier: string, pass: string) {
-    isLoading.value = true
-    error.value = ''
-    try {
-      const data = await authService.login(identifier, pass)
-
-      user.value = data
-      token.value = data.token
-      localStorage.setItem('token', data.token)
-
-      return true
-    } catch {
-      error.value = 'E-mail ou senha incorretos'
-      return false
-    } finally {
-      isLoading.value = false
-    }
+    return true
   }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function register(formData: any) {
     isLoading.value = true
     try {
-      // Geralmente registrar já loga o usuário ou manda confirmar email
       await authService.register(formData)
       return true
     } catch {

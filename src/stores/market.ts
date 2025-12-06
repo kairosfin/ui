@@ -15,10 +15,8 @@ export const useMarketStore = defineStore('market', () => {
       searchResults.value = []
       return
     }
-
     isLoading.value = true
     error.value = ''
-
     try {
       const results = await stockService.search([term])
       searchResults.value = results
