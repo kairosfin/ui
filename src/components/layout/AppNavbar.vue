@@ -17,6 +17,7 @@ defineProps({
 
 const router = useRouter()
 const isDrawerOpen = ref(false)
+const showConfirmLogout = ref(false) // 3. Estado para controlar o modal de confirmação
 
 const navItems = [
   { title: 'Portfolio', icon: 'mdi-wallet-outline', to: '/app' },
@@ -26,9 +27,12 @@ const navItems = [
   { title: 'Perfil', icon: 'mdi-account-outline', to: '/app/profile' },
 ]
 
+// 4. Ação que abre o modal
 function handleLogout() {
-  router.push('/login')
+  showConfirmLogout.value = true
 }
+
+// 5. Ação que executa o logout (chamada pelo modal)
 
 function goToProfile() {
   router.push('/app/profile')
@@ -66,6 +70,7 @@ function goToProfile() {
           class="text-h6 text-uppercase"
           prepend-icon="mdi-logout"
           @click="handleLogout"
+          aria-label="Sair da conta"
         >
           Sair
         </VBtn>
@@ -80,6 +85,7 @@ function goToProfile() {
       :ripple="false"
       append-icon="mdi-triangle-small-down"
       @click="isDrawerOpen = !isDrawerOpen"
+      aria-label="Abrir menu de navegação"
     >
       <AppLogoIcon />
     </VBtn>
@@ -91,6 +97,7 @@ function goToProfile() {
       image="https://i.pravatar.cc/150?img=12"
       class="cursor-pointer elevation-2"
       @click="goToProfile"
+      aria-label="Acessar página de perfil"
     />
   </VAppBar>
 </template>

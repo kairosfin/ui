@@ -12,18 +12,16 @@ const authStore = useAuthStore()
 const loading = ref(false)
 const formRef = ref()
 
-// 1. NOVO: Defina a interface que espelha os campos do formulário
 interface UserProfileForm {
   name: string
   email: string
   document: string
   phoneNumber: string
   birthdate: string
-  genderType: string | null // <--- Explicitamente permitimos STRING ou NULL
+  genderType: string | null
   address: string
 }
 
-// 2. Aplique a interface ao ref
 const form = ref<UserProfileForm>({
   name: '',
   email: '',
@@ -75,12 +73,21 @@ const onDateInput = (e: Event) => {
 </script>
 
 <template>
-  <VContainer class="fill-height justify-center">
+  <VContainer
+    class="fill-height justify-center"
+    role="main"
+    aria-label="Informações e configurações da conta"
+  >
     <VCard width="400" max-width="100%" flat color="transparent">
-      <BackButton title="Conta" to="/app" />
+      <BackButton title="Conta" to="/app" aria-label="Voltar para o painel principal" />
 
       <div class="text-center mb-8">
-        <VAvatar color="border" size="120">
+        <VAvatar
+          color="border"
+          size="120"
+          role="img"
+          :aria-label="`Iniciais do usuário: ${form.name ? form.name.substring(0, 2).toUpperCase() : 'US'}`"
+        >
           <span class="text-h3 text-secondary font-weight-medium">
             {{ form.name ? form.name.substring(0, 2).toUpperCase() : 'US' }}
           </span>
@@ -94,6 +101,7 @@ const onDateInput = (e: Event) => {
           bg-color="border"
           variant="filled"
           disabled
+          aria-label="Número da sua conta, não pode ser alterado"
         />
 
         <VTextField
@@ -102,7 +110,7 @@ const onDateInput = (e: Event) => {
           bg-color="border"
           variant="filled"
           :rules="[rules.required]"
-          disabled
+          readonly
         />
 
         <VTextField
@@ -111,7 +119,7 @@ const onDateInput = (e: Event) => {
           bg-color="border"
           variant="filled"
           :rules="[rules.required, rules.email]"
-          disabled
+          readonly
         />
 
         <VTextField
@@ -122,7 +130,7 @@ const onDateInput = (e: Event) => {
           maxlength="14"
           @input="onCPFInput"
           :rules="[rules.required, rules.cpf]"
-          disabled
+          readonly
         />
 
         <VTextField
@@ -133,7 +141,6 @@ const onDateInput = (e: Event) => {
           maxlength="15"
           @input="onPhoneInput"
           :rules="[rules.required, rules.phone]"
-          disabled
         />
 
         <VTextField
@@ -145,7 +152,6 @@ const onDateInput = (e: Event) => {
           maxlength="10"
           @input="onDateInput"
           :rules="[rules.required, rules.date]"
-          disabled
         />
 
         <VSelect
@@ -155,6 +161,7 @@ const onDateInput = (e: Event) => {
           label="Gênero"
           variant="outlined"
           :rules="[rules.required]"
+          aria-required="true"
         />
 
         <VTextField
@@ -165,7 +172,12 @@ const onDateInput = (e: Event) => {
           class="mb-6"
         />
 
-        <AppButton text="Salvar" :loading="loading" @click="saveProfile" />
+        <AppButton
+          text="Salvar"
+          :loading="loading"
+          @click="saveProfile"
+          aria-label="Salvar alterações no perfil"
+        />
       </VForm>
     </VCard>
   </VContainer>

@@ -3,9 +3,9 @@ import PortfolioChart from '@/components/charts/PortfolioChart.vue'
 import AppAccordion from '@/components/common/AppAccordion.vue'
 import AppButton from '@/components/common/AppButton.vue'
 import AppModal from '@/components/common/AppModal.vue'
-import AppSuccessModal from '@/components/common/AppSuccessModal.vue' // <-- 1. Importado
 import AppQuantitySelector from '@/components/common/AppQuantitySelector.vue'
 import AppSelect from '@/components/common/AppSelect.vue'
+import AppSuccessModal from '@/components/common/AppSuccessModal.vue' // <-- 1. Importado
 import BackButton from '@/components/common/ArrowButton.vue'
 import AssetHeader from '@/components/common/AssetHeader.vue'
 import BalanceCard from '@/components/common/BalanceCard.vue'

@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
-  async function login(identifier: string, pass: string) {
+  async function login() {
     return true
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -19,11 +19,15 @@ export default {
     return MOCK_USERS.find((u) => u.id === '1001') || null
   },
 
-  async login(identifier: string, password: string): Promise<User> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async login(data: any): Promise<any> {
+    console.log(data)
     return MOCK_USERS[0]
   },
 
-  async register(data: any): Promise<User> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async register(data: any): Promise<any> {
+    console.log(data)
     return MOCK_USERS[0]
   },
 }
